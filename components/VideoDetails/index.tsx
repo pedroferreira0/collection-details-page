@@ -2,12 +2,14 @@
 
 import { useState } from "react"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { VideoDetailsLayout } from "./layout"
 import { InformationCard } from "./InformationCard"
 import { StatisticsCard } from "./StatisticsCard"
 import { LocationsTab } from "./LocationsTab"
 import { CommentsTab } from "./CommentsTab"
 import { TabsCard } from "@/components/stateless/tabs-card"
+import { VideoOnElementsEdit } from "@/components/stateless/video-on-elements-edit"
 import type { MediaHighlight } from "@/components/video-elements"
 
 export interface VideoData {
@@ -18,7 +20,7 @@ export interface VideoData {
   videoUrl: string
 }
 
-export default function VideoDetails() {
+export function VideoDetails() {
   const [videoStatus, setVideoStatus] = useState<"active" | "inactive">("active")
   const [cover, setCover] = useState("/react-tutorial.png")
 
@@ -48,6 +50,8 @@ export default function VideoDetails() {
     ],
   })
 
+  const [isElementsSheetOpen, setIsElementsSheetOpen] = useState(false)
+
   const handleTitleChange = (newTitle: string) => {
     setVideoData({ ...videoData, title: newTitle })
   }
@@ -57,7 +61,23 @@ export default function VideoDetails() {
   }
 
   const handleVideoElementEdit = () => {
-    alert("Editar")
+    setIsElementsSheetOpen(true)
+  }
+
+  const handleElementsChange = (type: "products" | "button", data: any) => {
+    if (type === "products") {
+      setDefaultVideoElements({
+        type: "products",
+        products: data.selectedProducts,
+      })
+    } else {
+      setDefaultVideoElements({
+        type: "button",
+        buttonText: data.buttonText,
+        buttonLink: data.buttonLink,
+      })
+    }
+    setIsElementsSheetOpen(false)
   }
 
   const handleChangeCover = () => {
@@ -138,7 +158,46 @@ export default function VideoDetails() {
             <CommentsTab />
           </TabsCard>
         </div>
+
+        <Sheet open={isElementsSheetOpen} onOpenChange={setIsElementsSheetOpen}>
+          <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Editar Elementos do Vídeo</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6">
+              <VideoOnElementsEdit
+                initialType={defaultVideoElements.type}
+                initialProducts={defaultVideoElements.type === "products" ? defaultVideoElements.products : []}
+                initialButtonText={defaultVideoElements.type === "button" ? defaultVideoElements.buttonText || "" : ""}
+                initialButtonLink={defaultVideoElements.type === "button" ? defaultVideoElements.buttonLink || "" : ""}
+                availableProducts={[
+                  {
+                    id: "1",
+                    name: "Stick Cor Multifuncional",
+                    image: "/vestido-produto.png",
+                    price: "R$ 89,00",
+                  },
+                  {
+                    id: "2",
+                    name: "Vestido No Sleep PRETO",
+                    image: "/vestido-produto.png",
+                    price: "R$ 1.019,00",
+                  },
+                  {
+                    id: "3",
+                    name: "Blusa Casual Branca",
+                    image: "/vestido-produto.png",
+                    price: "R$ 159,00",
+                  },
+                ]}
+                onChange={handleElementsChange}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       </VideoDetailsLayout>
     </TooltipProvider>
   )
 }
+
+export default VideoDetails
